@@ -11,7 +11,7 @@ S3CMD='s3cmd --config=config_minio.txt'
 numsec=7200 # 2 ore 
 
    # leggo il file col radiosondaggio da Minio
-     s3cmd --config=config_minio.txt --force get s3://rete-monitoraggio/*.00S ./
+     s3cmd --config=config_minio.txt --force get s3://rete-monitoraggio/radiosondaggio/*.00S ./
    #eseguo lo script 
      ./driver_elabora_radiosond.sh
    # verifico se è andato a buon fine
@@ -22,9 +22,23 @@ numsec=7200 # 2 ore
      then
          exit 1
      fi
-     # cancello da Minio il file col radiosondaggio 
-       s3cmd --config=config_minio.txt --force del s3://rete-monitoraggio/*.00S ./
-     sleep $numsec
+    ################# pulizia cartella di minio
+    periodo="3 days"
+    $S3CMD --config=config_minio.txt ls s3://rete-monitoraggio/radiosondaggio/ | while read -r line;
+    do
+      createDate=`echo $line|awk {'print $1'}`
+      createDate=`date -d"$createDate" +%s`
+      olderThan=`date -d"-$periodo" +%s`
+      if [[ $createDate -lt $olderThan ]]
+        then
+          fileName=`echo $line|awk {'print $4'}`
+          if [[ $fileName != "" ]]
+            then
+            $S3CMD del "$fileName"
+          fi
+      fi
+    done;
+    sleep $numsec
 
 
 
@@ -34,7 +48,7 @@ do
   then
     SECONDS=0
       # leggo il file col radiosondaggio da Minio
-       s3cmd --config=config_minio.txt --force get s3://rete-monitoraggio/*.00S ./
+       s3cmd --config=config_minio.txt --force get s3://rete-monitoraggio/radiosondaggio/*.00S ./
       #eseguo lo script 
        ./driver_elabora_radiosond.sh
       # verifico se è andato a buon fine
@@ -45,8 +59,22 @@ do
       then
          exit 1
       fi
-      # cancello da Minio il file col radiosondaggio 
-        s3cmd --config=config_minio.txt --force del s3://rete-monitoraggio/*.00S 
+      ################# pulizia cartella di minio
+      periodo="3 days"
+      $S3CMD --config=config_minio.txt ls s3://rete-monitoraggio/radiosondaggio/ | while read -r line;
+      do
+        createDate=`echo $line|awk {'print $1'}`
+        createDate=`date -d"$createDate" +%s`
+        olderThan=`date -d"-$periodo" +%s`
+        if [[ $createDate -lt $olderThan ]]
+          then
+            fileName=`echo $line|awk {'print $4'}`
+            if [[ $fileName != "" ]]
+              then
+              $S3CMD del "$fileName"
+            fi
+        fi
+      done;
       sleep $numsec
    fi
 done
