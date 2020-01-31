@@ -11,7 +11,7 @@ S3CMD='s3cmd --config=config_minio.txt'
 numsec=7200 # 2 ore 
 
    # leggo il file col radiosondaggio da Minio
-     s3cmd --config=config_minio.txt --force get s3://rete-monitoraggio/radiosondaggio/*.00S ./
+     s3cmd --config=config_minio.txt --force get s3://rete-monitoraggio/radiosondaggi/*.00S ./
    #eseguo lo script 
      ./driver_elabora_radiosond.sh
    # verifico se è andato a buon fine
@@ -24,7 +24,7 @@ numsec=7200 # 2 ore
      fi
     ################# pulizia cartella di minio
     periodo="3 days"
-    $S3CMD --config=config_minio.txt ls s3://rete-monitoraggio/radiosondaggio/ | while read -r line;
+    $S3CMD --config=config_minio.txt ls s3://rete-monitoraggio/radiosondaggi/ | while read -r line;
     do
       createDate=`echo $line|awk {'print $1'}`
       createDate=`date -d"$createDate" +%s`
@@ -48,7 +48,7 @@ do
   then
     SECONDS=0
       # leggo il file col radiosondaggio da Minio
-       s3cmd --config=config_minio.txt --force get s3://rete-monitoraggio/radiosondaggio/*.00S ./
+       s3cmd --config=config_minio.txt --force get s3://rete-monitoraggio/radiosondaggi/*.00S ./
       #eseguo lo script 
        ./driver_elabora_radiosond.sh
       # verifico se è andato a buon fine
@@ -61,7 +61,7 @@ do
       fi
       ################# pulizia cartella di minio
       periodo="3 days"
-      $S3CMD --config=config_minio.txt ls s3://rete-monitoraggio/radiosondaggio/ | while read -r line;
+      $S3CMD --config=config_minio.txt ls s3://rete-monitoraggio/radiosondaggi/ | while read -r line;
       do
         createDate=`echo $line|awk {'print $1'}`
         createDate=`date -d"$createDate" +%s`
